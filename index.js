@@ -17,10 +17,10 @@ const defaultOptions = {
     reduce: null, // (accumulated, props) => { accumulated.sum += props.sum; }
 
     // properties to use for individual points when running the reducer
-    map: props => props // props => ({sum: props.my_value})
+    map: (props) => props, // props => ({sum: props.my_value})
 };
 
-const fround = Math.fround || (tmp => ((x) => { tmp[0] = +x; return tmp[0]; }))(new Float32Array(1));
+const fround = Math.fround || ((tmp) => ((x) => { tmp[0] = +x; return tmp[0]; }))(new Float32Array(1));
 
 const OFFSET_ZOOM = 2;
 const OFFSET_ID = 3;
@@ -37,7 +37,7 @@ export default class Supercluster {
     }
 
     load(points) {
-        const {log, minZoom, maxZoom} = this.options;
+        const { log, minZoom, maxZoom } = this.options;
 
         if (log) console.time('total time');
 
@@ -62,7 +62,7 @@ export default class Supercluster {
                 Infinity, // the last zoom the point was processed at
                 i, // index of the source feature in the original input array
                 -1, // parent cluster id
-                1 // number of points in a cluster
+                1, // number of points in a cluster
             );
             if (this.options.reduce) data.push(0); // noop
         }
@@ -153,13 +153,13 @@ export default class Supercluster {
     getTile(z, x, y) {
         const tree = this.trees[this._limitZoom(z)];
         const z2 = Math.pow(2, z);
-        const {extent, radius} = this.options;
+        const { extent, radius } = this.options;
         const p = radius / extent;
         const top = (y - p) / z2;
         const bottom = (y + 1 + p) / z2;
 
         const tile = {
-            features: []
+            features: [],
         };
 
         this._addTileFeatures(
@@ -249,9 +249,9 @@ export default class Supercluster {
                 type: 1,
                 geometry: [[
                     Math.round(this.options.extent * (px * z2 - x)),
-                    Math.round(this.options.extent * (py * z2 - y))
+                    Math.round(this.options.extent * (py * z2 - y)),
                 ]],
-                tags
+                tags,
             };
 
             // assign id
@@ -275,7 +275,7 @@ export default class Supercluster {
     }
 
     _cluster(tree, zoom) {
-        const {radius, extent, reduce, minPoints} = this.options;
+        const { radius, extent, reduce, minPoints } = this.options;
         const r = radius / (extent * Math.pow(2, zoom));
         const data = tree.data;
         const nextData = [];
@@ -384,8 +384,8 @@ function getClusterJSON(data, i, clusterProps) {
         properties: getClusterProperties(data, i, clusterProps),
         geometry: {
             type: 'Point',
-            coordinates: [xLng(data[i]), yLat(data[i + 1])]
-        }
+            coordinates: [xLng(data[i]), yLat(data[i + 1])],
+        },
     };
 }
 
@@ -401,7 +401,7 @@ function getClusterProperties(data, i, clusterProps) {
         cluster: true,
         'cluster_id': data[i + OFFSET_ID],
         'point_count': count,
-        'point_count_abbreviated': abbrev
+        'point_count_abbreviated': abbrev,
     });
 }
 

@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import {readFileSync} from 'fs';
+import { readFileSync } from 'fs';
 import Supercluster from '../index.js';
 
 const places = JSON.parse(readFileSync(new URL('./fixtures/places.json', import.meta.url)));
@@ -16,20 +16,20 @@ test('generates clusters properly', () => {
 });
 
 test('supports minPoints option', () => {
-    const index = new Supercluster({minPoints: 5}).load(places.features);
+    const index = new Supercluster({ minPoints: 5 }).load(places.features);
     const tile = index.getTile(0, 0, 0);
     assert.deepEqual(tile.features, placesTileMin5.features);
 });
 
 test('returns children of a cluster', () => {
     const index = new Supercluster().load(places.features);
-    const childCounts = index.getChildren(164).map(p => p.properties.point_count || 1);
+    const childCounts = index.getChildren(164).map((p) => p.properties.point_count || 1);
     assert.deepEqual(childCounts, [6, 7, 2, 1]);
 });
 
 test('returns leaves of a cluster', () => {
     const index = new Supercluster().load(places.features);
-    const leafNames = index.getLeaves(164, 10, 5).map(p => p.properties.name);
+    const leafNames = index.getLeaves(164, 10, 5).map((p) => p.properties.name);
     assert.deepEqual(leafNames, [
         'Niagara Falls',
         'Cape San Blas',
@@ -40,13 +40,13 @@ test('returns leaves of a cluster', () => {
         'I. de Cozumel',
         'Grand Cayman',
         'Miquelon',
-        'Cape Bauld'
+        'Cape Bauld',
     ]);
 });
 
 test('generates unique ids with generateId option', () => {
-    const index = new Supercluster({generateId: true}).load(places.features);
-    const ids = index.getTile(0, 0, 0).features.filter(f => !f.tags.cluster).map(f => f.id);
+    const index = new Supercluster({ generateId: true }).load(places.features);
+    const ids = index.getTile(0, 0, 0).features.filter((f) => !f.tags.cluster).map((f) => f.id);
     assert.deepEqual(ids, [12, 20, 21, 22, 24, 28, 30, 62, 81, 118, 119, 125, 81, 118]);
 });
 
@@ -56,8 +56,8 @@ test('getLeaves handles null-property features', () => {
         properties: null,
         geometry: {
             type: 'Point',
-            coordinates: [-79.04411780507252, 43.08771393436908]
-        }
+            coordinates: [-79.04411780507252, 43.08771393436908],
+        },
     }]));
     const leaves = index.getLeaves(165, 1, 6);
     assert.equal(leaves[0].properties, null);
@@ -84,14 +84,14 @@ test('returns cluster expansion zoom for maxZoom', () => {
 
 test('aggregates cluster properties with reduce', () => {
     const index = new Supercluster({
-        map: props => ({sum: props.scalerank}),
+        map: (props) => ({ sum: props.scalerank }),
         reduce: (a, b) => { a.sum += b.sum; },
-        radius: 100
+        radius: 100,
     }).load(places.features);
 
-    assert.deepEqual(index.getTile(1, 0, 0).features.map(f => f.tags.sum).filter(Boolean),
+    assert.deepEqual(index.getTile(1, 0, 0).features.map((f) => f.tags.sum).filter(Boolean),
         [146, 84, 63, 23, 34, 12, 19, 29, 8, 8, 80, 35]);
-    assert.deepEqual(index.getTile(0, 0, 0).features.map(f => f.tags.sum).filter(Boolean),
+    assert.deepEqual(index.getTile(0, 0, 0).features.map((f) => f.tags.sum).filter(Boolean),
         [298, 122, 12, 36, 98, 7, 24, 8, 125, 98, 125, 12, 36, 8]);
 });
 
@@ -102,30 +102,30 @@ test('returns clusters when query crosses international dateline', () => {
             properties: null,
             geometry: {
                 type: 'Point',
-                coordinates: [-178.989, 0]
-            }
+                coordinates: [-178.989, 0],
+            },
         }, {
             type: 'Feature',
             properties: null,
             geometry: {
                 type: 'Point',
-                coordinates: [-178.990, 0]
-            }
+                coordinates: [-178.990, 0],
+            },
         }, {
             type: 'Feature',
             properties: null,
             geometry: {
                 type: 'Point',
-                coordinates: [-178.991, 0]
-            }
+                coordinates: [-178.991, 0],
+            },
         }, {
             type: 'Feature',
             properties: null,
             geometry: {
                 type: 'Point',
-                coordinates: [-178.992, 0]
-            }
-        }
+                coordinates: [-178.992, 0],
+            },
+        },
     ]);
 
     const nonCrossing = index.getClusters([-179, -10, -177, 10], 1);
@@ -156,18 +156,18 @@ test('makes sure same-location points are clustered', () => {
     const index = new Supercluster({
         maxZoom: 20,
         extent: 8192,
-        radius: 16
+        radius: 16,
     }).load([
-        {type: 'Feature', geometry: {type: 'Point', coordinates: [-1.426798, 53.943034]}},
-        {type: 'Feature', geometry: {type: 'Point', coordinates: [-1.426798, 53.943034]}}
+        { type: 'Feature', geometry: { type: 'Point', coordinates: [-1.426798, 53.943034] } },
+        { type: 'Feature', geometry: { type: 'Point', coordinates: [-1.426798, 53.943034] } },
     ]);
 
     assert.equal(index.trees[20].ids.length, 1);
 });
 
 test('makes sure unclustered point coords are not rounded', () => {
-    const index = new Supercluster({maxZoom: 19}).load([
-        {type: 'Feature', geometry: {type: 'Point', coordinates: [173.19150559062456, -41.340357424709275]}}
+    const index = new Supercluster({ maxZoom: 19 }).load([
+        { type: 'Feature', geometry: { type: 'Point', coordinates: [173.19150559062456, -41.340357424709275] } },
     ]);
 
     assert.deepEqual(index.getTile(20, 1028744, 656754).features[0].geometry[0], [421, 281]);
